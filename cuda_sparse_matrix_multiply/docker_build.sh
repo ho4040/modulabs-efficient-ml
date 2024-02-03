@@ -1,0 +1,1 @@
+docker build -t efficient-ml-spmm -f ./Dockerfile .

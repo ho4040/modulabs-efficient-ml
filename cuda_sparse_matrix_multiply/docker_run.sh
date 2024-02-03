@@ -1,0 +1,1 @@
+docker run --gpus all efficient-ml-spmm
