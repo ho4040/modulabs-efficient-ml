@@ -21,8 +21,8 @@ train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 class BasicFCModel(nn.Module):
     def __init__(self):
         super(BasicFCModel, self).__init__()
-        self.fc1 = nn.Linear(784, 512).half() # matrix shape: row=512, col=784. number of parameters: 512*784 + 512 = 401920.
-        self.hiddenLayer = nn.Linear(512, 512).half() # matrix shape: row=512, col=784. number of parameters: 512*784 + 512 = 401920.
+        self.fc1 = nn.Linear(784, 512).half() 
+        self.hiddenLayer = nn.Linear(512, 512).half() # matrix shape: row=512, col=512. (행렬 사이즈가 32 또는 64의 배수인 경우만 작동합니다.)
         self.fc2 = nn.Linear(512, 10).half()
     def forward(self, x):
         x = x.view(-1, 784).half() # 입력 데이터를 784차원 벡터로 펼침
