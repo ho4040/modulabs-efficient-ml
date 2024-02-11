@@ -74,11 +74,11 @@ axs[0].scatter(bins_centers, normalized_counts, s=3, alpha=0.5)
 axs[0].set_xlabel('Activation Value')
 axs[0].set_ylabel('Normalized Number of Counts')
 axs[0].set_yscale('log')
-axs[0].set_title('Scatter Plot of Activation Values in Conv1 of VGG16')
+axs[0].set_title('Activation Values in Conv3 of VGG16')
 
 # Plot for KL divergence by clip position
 axs[1].plot(clip_pos_list, d_kl_values)
-axs[1].set_xlabel('clip position')
+axs[1].set_xlabel('Clip position')
 axs[1].set_ylabel('KL divergence')
 axs[1].set_title('KL divergence by clip position')
 
