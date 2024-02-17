@@ -49,8 +49,8 @@ net
 net.qconfig = torch.ao.quantization.default_qconfig
 net.train()
 # torch.ao.quantization.prepare_qat 레이어마다 weight_fake_quant 모듈을 붙여줍니다.
-net_quantized = torch.ao.quantization.prepare_qat(net) 
-net_quantized
+net_fake_quantized = torch.ao.quantization.prepare_qat(net) 
+net_fake_quantized
 # %%
 # 학습 진행
 def train(train_loader, net, epochs=5, total_iterations_limit=None):
@@ -93,7 +93,7 @@ def print_size_of_model(model):
 
 #%%
 # 학습을 진행합니다.
-train(train_loader, net_quantized, epochs=1)
+train(train_loader, net_fake_quantized, epochs=1)
 # %%
 def test(model: nn.Module, total_iterations: int = None):
     correct = 0
@@ -118,50 +118,50 @@ def test(model: nn.Module, total_iterations: int = None):
     return acc
 
 print(f'칼리브레이션 정보 확인')
-net_quantized
+net_fake_quantized
 # %%
 # 수집된 칼리브레이션 정보를 이용해서 양자화를 완료합니다. 
-net_quantized.eval()
-net_converted = torch.ao.quantization.convert(net_quantized)
+net_fake_quantized.eval()
+net_real_quantized = torch.ao.quantization.convert(net_fake_quantized)
 # %%
-print(f'양자화 된 모델 정보 확인')
-net_quantized
+print(f'양자화 이전 모델 정보 확인 (Fake Quantization 적용된 상태)')
+net_fake_quantized
 #%%
 print(f'양자화 된 모델 정보 확인')
-net_converted
+net_real_quantized
 # %%
 print('퀀타이제이션 된 모델 가중치 확인')
-print(torch.int_repr(net_converted.linear1.weight()))
+print(torch.int_repr(net_real_quantized.linear1.weight()))
 #%%
 print('Reconstruction loss: ')
-torch.mean(torch.abs(net_quantized.linear1.weight - torch.dequantize(net_converted.linear1.weight())))
+torch.mean(torch.abs(net_fake_quantized.linear1.weight - torch.dequantize(net_real_quantized.linear1.weight())))
 #%%
 # Weight 히스토그램 비교
 fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-ax[0].hist(net_quantized.linear1.weight.cpu().detach().numpy().flatten(), bins=300)
-ax[1].hist(torch.int_repr(net_converted.linear1.weight()).cpu().detach().numpy().flatten(), bins=300)
-ax[0].set_title('After QAT')
+ax[0].hist(net_fake_quantized.linear1.weight.cpu().detach().numpy().flatten(), bins=300)
+ax[1].hist(torch.int_repr(net_real_quantized.linear1.weight()).cpu().detach().numpy().flatten(), bins=300)
+ax[0].set_title('After QAT (Fake quantization)')
 ax[1].set_title('Apply Quantization')
 plt.legend()
 plt.show()
 
 # %%
 # 모델 사이즈 비교
-v1 = get_model_size(net_quantized)
-v2 = get_model_size(net_converted)
+v1 = get_model_size(net_fake_quantized)
+v2 = get_model_size(net_real_quantized)
 # bar chart of model size
 fig, ax = plt.subplots()
-ax.bar(['After QAT', 'Quantized'], [v1, v2])
+ax.bar(['After QAT (Fake quantization)', 'Quantized'], [v1, v2])
 ax.set_ylabel('Model size (KB)')
 plt.title('Model size comparison')
 plt.show()
 # %%
 # 정확도 비교
-acc1 = test(net_quantized)
-acc2 = test(net_converted)
+acc1 = test(net_fake_quantized)
+acc2 = test(net_real_quantized)
 # bar chart of accuracy
 fig, ax = plt.subplots()
-ax.bar(['After QAT', 'Quantized'], [acc1, acc2])
+ax.bar(['After QAT(Fake quantization)', 'Quantized'], [acc1, acc2])
 ax.set_ylabel('Accuracy')
 plt.title('Accuracy comparison')
 plt.show()
